@@ -33,7 +33,7 @@ npm install
 
   
 
-php bin/console doctrine:database:create
+symfony console doctrine:database:create
 
     Import the database by running the following command:
 
@@ -49,13 +49,17 @@ symfony console doctrine:schema:update --force
 
 Startup
 
-Start the Symfony development server by running the following command:
+Type this command: 
 
-  
+npm run build
+
+Start the server by running the following command:
 
 symfony server:start
 
 The project is now accessible at http://localhost:8000.
+
+ 
 Usage
 
     Access the application using the above URL.
