@@ -13,7 +13,7 @@ git clone https://github.com/Avo-Ni/football.git
 
   
 
-cd football-manager
+cd football
 
     Install the dependencies by running the following command:
 
