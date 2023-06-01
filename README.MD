@@ -7,7 +7,7 @@ Installation
 
     
 
-git clone https://github.com/your-username/football-manager.git
+git clone https://github.com/Avo-Ni/football-manager.git
 
 Navigate to the project directory:
 
