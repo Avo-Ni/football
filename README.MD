@@ -5,41 +5,57 @@ Installation
 
     Clone this code repository by running the following command:
 
-    
+  
 
 git clone https://github.com/Avo-Ni/football.git
 
-Navigate to the project directory:
+    Navigate to the project directory:
 
+  
 
 cd football-manager
 
-Install the dependencies by running the following command:
+    Install the dependencies by running the following command:
+
+  
 
 composer install
 
-Configure the database connection settings by editing the .env file and updating the values of DATABASE_URL to match your database configuration.
+    Install the Vue.js dependencies by running the following command:
 
-Create the database by running the following command:
+  
+
+npm install
+
+    Configure the database connection settings by editing the .env file and updating the values of DATABASE_URL to match your database configuration.
+
+    Create the database by running the following command:
+
+  
 
 php bin/console doctrine:database:create
 
-Import the database by running:
+    Import the database by running the following command:
+
+  
 
 symfony console doctrine:database:import football.sql
 
-After importing the database file, you need to update schema to reflect the changes. You can do this by running the following command:
+    After importing the database file, you need to update the schema to reflect the changes. You can do this by running the following command:
+
+  
 
 symfony console doctrine:schema:update --force
 
+Startup
 
-Start the Symfony development server:
+Start the Symfony development server by running the following command:
 
+  
 
-    symfony server:start
+symfony server:start
 
-    The project is now accessible at http://localhost:8000.
-
+The project is now accessible at http://localhost:8000.
 Usage
 
     Access the application using the above URL.
@@ -50,5 +66,7 @@ Usage
 Tests
 
 To run the tests, use the following command:
+
+  
 
 vendor/bin/phpunit
