@@ -51,15 +51,14 @@ class PlayerControllerTest extends WebTestCase
     private function createTeam(): int
     {
         $team = new Team();
-        $team->setName('Nom de l\'équipe');
-        $team->setCountry('Pays de l\'équipe');
-        $team->setMoneyBalance(100); // Remplacez 100 par la valeur appropriée pour le solde de l'argent
-    
+        $team->setName('Team Name');
+        $team->setCountry('Team Country');
+        $team->setMoneyBalance(100); 
+
         $entityManager = self::$container->get('doctrine')->getManager();
         $entityManager->persist($team);
         $entityManager->flush();
-    
+
         return $team->getId();
     }
-
 }

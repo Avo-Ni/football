@@ -28,7 +28,7 @@ class TeamControllerTest extends WebTestCase
             ],
         ];
 
-        // Supprimer les données créées lors du test
+        // Delete the data created during the test
         $entityManager = $client->getContainer()->get('doctrine.orm.default_entity_manager');
         $entityManager->getConnection()->beginTransaction();
 
@@ -36,12 +36,12 @@ class TeamControllerTest extends WebTestCase
             $team = $entityManager->getRepository(Team::class)->findOneBy(['name' => 'Test Team']);
 
             if ($team !== null) {
-                // Supprimer les joueurs associés à l'équipe
+                // Remove the players associated with the team
                 foreach ($team->getPlayers() as $player) {
                     $entityManager->remove($player);
                 }
 
-                // Supprimer l'équipe elle-même
+                // Remove the team itself
                 $entityManager->remove($team);
                 $entityManager->flush();
             }
@@ -52,7 +52,7 @@ class TeamControllerTest extends WebTestCase
             throw $e;
         }
 
-        // Ajouter une nouvelle équipe avec des joueurs
+        // Add a new team with players
         $client->request(
             'POST',
             '/teams',
