@@ -62,3 +62,6 @@ Usage
   Manage player transfers between teams.
   View information about teams and players.
 
+Run test with the following command:
+
+     vendor/bin/phpunit
