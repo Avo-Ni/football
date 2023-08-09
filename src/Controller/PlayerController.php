@@ -12,6 +12,7 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 class PlayerController extends AbstractController
 {
@@ -42,31 +43,33 @@ class PlayerController extends AbstractController
     /**
      * @Route("/players/sell", name="player_sell", methods={"POST"})
      */
-    public function sellPlayer(Request $request): JsonResponse
+    public function sellPlayer(Request $request, ValidatorInterface $validator): JsonResponse
     {
         $data = json_decode($request->getContent(), true);
 
         if (!isset($data['id']) || !isset($data['price'])) {
-            return new JsonResponse(['message' => 'Invalid data provided'], Response::HTTP_BAD_REQUEST);
+            return $this->json(['message' => 'Invalid data provided'], Response::HTTP_BAD_REQUEST);
         }
 
         $playerId = $data['id'];
         $price = $data['price'];
 
-        // Retrieve the player
         $player = $this->playerRepository->find($playerId);
 
         if (!$player) {
-            return new JsonResponse(['message' => 'Player not found'], Response::HTTP_NOT_FOUND);
+            return $this->json(['message' => 'Player not found'], Response::HTTP_NOT_FOUND);
         }
 
-        // Set the price of the player
         $player->setPrice($price);
 
-        // Save the changes
+        $validationErrors = $validator->validate($player);
+        if (count($validationErrors) > 0) {
+            return $this->json(['message' => 'Validation error', 'errors' => $validationErrors], Response::HTTP_BAD_REQUEST);
+        }
+
         $this->entityManager->flush();
 
-        return new JsonResponse(['message' => 'Player listed for sale'], Response::HTTP_OK);
+        return $this->json(['message' => 'Player listed for sale'], Response::HTTP_OK);
     }
 
     /**
@@ -76,68 +79,62 @@ class PlayerController extends AbstractController
     {
         $availablePlayers = $this->playerRepository->findAvailablePlayers();
 
-        $playersData = [];
-
-        foreach ($availablePlayers as $player) {
-            $playerData = [
+        $playersData = array_map(function (Player $player) {
+            return [
                 'id' => $player->getId(),
                 'name' => $player->getName(),
                 'surname' => $player->getSurname(),
                 'price' => $player->getPrice(),
             ];
+        }, $availablePlayers);
 
-            $playersData[] = $playerData;
-        }
-
-        return new JsonResponse($playersData, Response::HTTP_OK);
+        return $this->json($playersData, Response::HTTP_OK);
     }
 
     /**
      * @Route("/players/transfer", name="player_transfer", methods={"POST"})
      */
-    public function transferPlayer(Request $request): JsonResponse
+    public function transferPlayer(Request $request, ValidatorInterface $validator): JsonResponse
     {
         $data = json_decode($request->getContent(), true);
 
         if (!isset($data['id']) || !isset($data['teamId'])) {
-            return new JsonResponse(['message' => 'Invalid data provided'], Response::HTTP_BAD_REQUEST);
+            return $this->json(['message' => 'Invalid data provided'], Response::HTTP_BAD_REQUEST);
         }
 
         $playerId = $data['id'];
         $teamId = $data['teamId'];
 
-        // Retrieve the player and new team
         $player = $this->playerRepository->find($playerId);
         $newTeam = $this->teamRepository->find($teamId);
 
         if (!$player || !$newTeam) {
-            return new JsonResponse(['message' => 'Player or new team not found'], Response::HTTP_NOT_FOUND);
+            return $this->json(['message' => 'Player or new team not found'], Response::HTTP_NOT_FOUND);
         }
 
         $oldTeam = $player->getTeam();
 
-        // Check if the new team has enough money balance
         if ($newTeam->getMoneyBalance() < $player->getPrice()) {
-            return new JsonResponse(['message' => 'Insufficient funds in the new team'], Response::HTTP_BAD_REQUEST);
+            return $this->json(['message' => 'Insufficient funds in the new team'], Response::HTTP_BAD_REQUEST);
         }
 
-        // Subtract player's price from old team's money balance
         if ($player->getPrice() !== null) {
             $oldTeam->subtractMoney($player->getPrice());
         }
 
-        // Set the new team for the player
         $player->setTeam($newTeam);
 
-        // Add player's price to the new team's money balance
         $newTeam->addMoney($player->getPrice());
 
-        // Reset the price of the player
         $player->setPrice(null);
 
-        // Save the changes
+        $validationErrors = $validator->validate($player);
+        if (count($validationErrors) > 0) {
+            return $this->json(['message' => 'Validation error', 'errors' => $validationErrors], Response::HTTP_BAD_REQUEST);
+        }
+
         $this->entityManager->flush();
 
-        return new JsonResponse(['message' => 'Player transferred successfully'], Response::HTTP_OK);
+        return $this->json(['message' => 'Player transferred successfully'], Response::HTTP_OK);
     }
 }

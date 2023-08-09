@@ -11,6 +11,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
+use Doctrine\ORM\EntityManagerInterface;
 
 class TeamController extends AbstractController
 {
@@ -67,10 +68,42 @@ class TeamController extends AbstractController
     /**
      * @Route("/teams", methods={"POST"})
      */
+    /**
+     * @Route("/teams", methods={"POST"})
+     */
     public function addTeam(Request $request): JsonResponse
     {
-        $data = json_decode($request->getContent(), true);
+        try {
+            $data = json_decode($request->getContent(), true);
 
+            $this->validateTeamData($data);
+
+            $team = $this->createTeamFromData($data);
+
+            $this->entityManager->persist($team);
+            $this->entityManager->flush();
+
+            return new JsonResponse(['message' => 'Team created successfully'], 201);
+        } catch (\Exception $e) {
+            return new JsonResponse(['message' => 'Error creating team: ' . $e->getMessage()], 500);
+        }
+    }
+
+    private function validateTeamData(array $data): void
+    {
+        if (!isset($data['newTeam'])) {
+            throw new \InvalidArgumentException('Invalid data provided');
+        }
+
+        $newTeamData = $data['newTeam'];
+
+        if (!isset($newTeamData['name']) || !isset($newTeamData['country']) || !isset($newTeamData['moneyBalance']) || !isset($newTeamData['players'])) {
+            throw new \InvalidArgumentException('Invalid team data provided');
+        }
+    }
+
+    private function createTeamFromData(array $data): Team
+    {
         $newTeamData = $data['newTeam'];
 
         $team = new Team();
@@ -78,20 +111,15 @@ class TeamController extends AbstractController
         $team->setCountry($newTeamData['country']);
         $team->setMoneyBalance($newTeamData['moneyBalance']);
 
-        $entityManager = $this->getDoctrine()->getManager();
-        $entityManager->persist($team);
-
         foreach ($newTeamData['players'] as $playerData) {
             $player = new Player();
             $player->setName($playerData['name']);
             $player->setSurname($playerData['surname']);
             $player->setTeam($team);
 
-            $entityManager->persist($player);
+            $this->entityManager->persist($player);
         }
 
-        $entityManager->flush();
-
-        return new JsonResponse(['message' => 'Team created successfully'], 201);
+        return $team;
     }
 }
